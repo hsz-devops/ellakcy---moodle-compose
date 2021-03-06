@@ -3,7 +3,7 @@ version: '2'
 services:
 
   moodle_db:
-    image: mysql
+    image: mysql:5.7
     volumes:
       - './data/db:/var/lib/mysql'
     environment:
@@ -17,6 +17,7 @@ services:
     image: ellakcy/moodle:mysql_maria_apache
     volumes:
       - './data/moodle:/var/moodledata'
+      - './data/moodle/www:/var/www/html'
     ports:
       - '8082:80'
     links:
@@ -26,8 +27,12 @@ services:
       MOODLE_ADMIN: $MOODLE_ADMIN
       MOODLE_ADMIN_PASSWORD: $MOODLE_ADMIN_PASSWORD
       MOODLE_ADMIN_EMAIL: $MOODLE_ADMIN_EMAIL
-      MOODLE_DB_TYPE: "mariadb"
+      MOODLE_DB_TYPE: "mysqli"
       MOODLE_DB_HOST: "moodle_db"
       MOODLE_DB_USER: $MOODLE_DB_USER
       MOODLE_DB_PASSWORD: $MOODLE_DB_PASSWORD
       MOODLE_DB_NAME: $MOODLE_DB_NAME
+      MOODLE_REVERSE_LB: $MOODLE_REVERSE_LB
+      MOODLE_SSL: $MOODLE_SSL
+      MOODLE_EMAIL_TYPE_QMAIL: MOODLE_EMAIL_TYPE_QMAIL
+      MOODLE_EMAIL_HOST: MOODLE_EMAIL_HOST

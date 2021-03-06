@@ -12,10 +12,12 @@ ln -s ^correct_moodle_compose.yml^ docker-compose.yml
 
 On the last command above replace the `^correct_moodle_compose.yml^` with one of the following table:
 
-How to run php | Mysql | Mariadb | Postgresql
+Database | apache | alpine fpm | lts
 --- | --- | --- | ---
-apache | `docker-compose_mysql_apache.yml` | `docker-compose_maria_apache.yml` | `docker-compose_postgresql_apache.yml`
-fpm | `docker-compose_postgresql_alpine_fpm.yml` | `docker-compose_maria_alpine_fpm.yml` | `docker-compose_postgresql_alpine_fpm.yml`
+Mysql | `docker-compose_mysql_apache.yml`  |  `docker-compose_postgresql_alpine_fpm.yml` | no
+mariadb | `docker-compose_maria_apache.yml` | `docker-compose_maria_alpine_fpm.yml` | no
+postgresql | `docker-compose_postgresql_apache.yml` | `docker-compose_postgresql_alpine_fpm.yml` | no
+
 
 Then edit the `.env` file accorditly, you will need to put some values in it please rest easy in in there are instructions in it regarding the values to fill. This can be done via a text editor:
 
@@ -53,9 +55,9 @@ With that we stopped removed the old images we fetched the new ones and we rerun
 
 ## Info regarding the moodle's url
 
-Most of the times the moodle may need to run behind an http reverse proxy. In this case set the value for the url that the end user will type in his/her browser. )Otherwise set the value http://0.0.0.0:8082
+Most of the times the moodle may need to run behind an http reverse proxy. In this case set the value for the url that the end user will type in his/her browser. Otherwise set the value http://0.0.0.0:8082
 
-### In case you want to change port that webserver listens
+### In case you want to change port that docker delivered nginx webserver listens
 
 You should edit the following files:
 
@@ -74,7 +76,7 @@ server {
 	listen 80;
 	# Put the site's url
 	server_name ^site_url^;
-	rewrite ^ https://$server_name$request_uri? permanent;
+	return 301 https://$server_name$request_uri;
 }
 
 server {
@@ -105,7 +107,15 @@ server {
 
 ```
 
-Please replace the values that are between `^` with apropriate ones. For ssl certificate we recomend the letencrpypt's certbot.
+Please replace the values that are between `^` with apropriate ones. For ssl certificate we recomend the letencrpypt's certbot. Also the reverse proxy should **NEVER** forward the `Host` http header. For more info you can consult the [nginx configuration](https://raw.githubusercontent.com/ellakcy/docker-moodle/master/conf/nginx/nginx_ssl_reverse.conf) delivered by us.
+
+## Migrations from fpm to apache
+
+You can easily migrate from fpm ones into apache ones, but theese concers should be followed:
+
+* The database layer should be the same eg. if you select `mysql` variant stick to that.
+* Remove the `docker-compse.yml` and link with the aqpache variant.
+* The opposite shoulde be plausible as well.
 
 ## I made my own image how can I play with?
 
@@ -159,5 +169,8 @@ services:
       MOODLE_DB_USER: $MOODLE_DB_USER
       MOODLE_DB_PASSWORD: $MOODLE_DB_PASSWORD
       MOODLE_DB_NAME: $MOODLE_DB_NAME
-
+      MOODLE_REVERSE_LB: $MOODLE_REVERSE_LB
+      MOODLE_SSL: $MOODLE_SSL
+      MOODLE_EMAIL_TYPE_QMAIL: $MOODLE_EMAIL_TYPE_QMAIL
+      MOODLE_EMAIL_HOST: $MOODLE_EMAIL_HOST
 ```
